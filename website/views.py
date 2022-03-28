@@ -44,7 +44,7 @@ def video():
             return render_template("video.html", user=current_user)
         
         # Assign the file type and donwloads path
-        file_type = "mp4" if request.form["convert"] == "mp4" else "mp3"
+        file_type = "mp4" # if request.form["convert"] == "mp4" else "mp3"
         downloads_path = os.path.join(os.getcwd(), "temp")
 
         # Try downloading the converted video
