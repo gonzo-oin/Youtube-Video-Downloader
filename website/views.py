@@ -27,7 +27,7 @@ def home():
 def video():
     # Check if post request
     if request.method == "GET":
-        url = request.args.get('url')
+        url = request.headers.get('url')
         #url = request.form.get("url")
         #date = request.form.get("date")
         
