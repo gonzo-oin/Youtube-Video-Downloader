@@ -26,9 +26,10 @@ def home():
 @views.route("/video", methods=["GET", "POST"])
 def video():
     # Check if post request
-    if request.method == "POST":
-        url = request.form.get("url")
-        date = request.form.get("date")
+    if request.method == "GET":
+        url = request.args.get('url')
+        #url = request.form.get("url")
+        #date = request.form.get("date")
         
         session.clear()
 
@@ -71,7 +72,7 @@ def video():
         update_metadata(file_path, yt.title, yt.author)
 
         # Save conversion to user history
-        save_history(url, date, video.title, "video", file_type)
+        #save_history(url, date, video.title, "video", file_type)
         
         # Try sending the file to the browser to be downloaded
         try:
