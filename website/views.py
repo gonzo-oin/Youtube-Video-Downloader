@@ -254,7 +254,7 @@ def zip_folder(name: str, path: str) -> tuple[str, BytesIO]:
 def download_video(yt: YouTube, file_type: str, downloads_path: str, debug: bool=False):
     # Download a video and debug progress
     if file_type == "mp4":
-        video = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').desc().first()
+        video = yt.streams.get_highest_resolution()
     else:
         video = yt.streams.filter(only_audio=True).get_audio_only()
 
