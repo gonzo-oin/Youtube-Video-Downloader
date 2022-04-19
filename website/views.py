@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from .models import Video
 from . import db
 
-from pytube import YouTube, Playlist
+from pytube import YouTube, Playlist, Stream
 from youtubesearchpython import VideosSearch, PlaylistsSearch
 from moviepy.editor import AudioFileClip
 import mutagen
@@ -47,7 +47,9 @@ def video():
         file_type = "mp4" # if request.form["convert"] == "mp4" else "mp3"
         downloads_path = os.path.join(os.getcwd(), "temp")
 
-        # Try downloading the converted video
+        videobis = yt.streams.get_highest_resolution()
+        return redirect(videobis.url)
+# Try downloading the converted video
         try:
             video = download_video(yt, file_type, downloads_path, True)
         except Exception:
@@ -251,7 +253,7 @@ def zip_folder(name: str, path: str) -> tuple[str, BytesIO]:
     memory_file.seek(0)
     return zip_file_name, memory_file
 
-def download_video(yt: YouTube, file_type: str, downloads_path: str, debug: bool=False):
+def download_video(yt: YouTube, file_type: str, downloads_path: str, debug: bool=False) -> Stream:
     # Download a video and debug progress
     if file_type == "mp4":
         video = yt.streams.get_highest_resolution()
