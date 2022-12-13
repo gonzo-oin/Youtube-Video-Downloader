@@ -6,8 +6,8 @@ gunicorn==20.1.0
 Jinja2==3.0.3
 moviepy==1.0.3
 mutagen==1.45.1
-pytube==12.0.0
--e git+https://github.com/GameGenesis/pytube@72075dddb2153bde89a8de9eb8def91d41da3655#egg=pytube
+pytube==12.1.0
+-e git+https://github.com/kinshuk-h/pytube@2a26b5af05af370b5c34adc5e31f6f5dee78afa8#egg=pytube
 SQLAlchemy==1.4.31
 Werkzeug==2.0.3
 youtube-search-python==1.6.2
