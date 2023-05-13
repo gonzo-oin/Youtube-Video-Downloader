@@ -1,15 +1,15 @@
 ffmpeg-python==0.2.0
-Flask==2.0.3
-Flask-Login==0.5.0
-Flask-SQLAlchemy==2.5.1
+Flask==2.3.2
+Flask-Login==0.6.2
+Flask-SQLAlchemy==3.0.3
 gunicorn==20.1.0
-Jinja2==3.0.3
+Jinja2==3.1.2
 moviepy==1.0.3
-mutagen==1.45.1
-pytube==12.1.0
--e git+https://github.com/kinshuk-h/pytube@2a26b5af05af370b5c34adc5e31f6f5dee78afa8#egg=pytube
-SQLAlchemy==1.4.31
-Werkzeug==2.0.3
-youtube-search-python==1.6.2
-yt-dlp==2022.2.4
-uwsgi
+mutagen==1.46.0
+pytube==15.0.0
+#-e git+https://github.com/kinshuk-h/pytube@2a26b5af05af370b5c34adc5e31f6f5dee78afa8#egg=pytube
+SQLAlchemy==2.0.13
+Werkzeug==2.3.4
+youtube-search-python==1.6.6
+yt-dlp==2023.3.4
+uwsgi==2.0.21
