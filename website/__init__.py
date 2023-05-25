@@ -1,7 +1,7 @@
+from os import environ
+
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-from os import path, environ
 
 
 def create_app():
@@ -13,8 +13,6 @@ def create_app():
 
     app.register_blueprint(views, url_prefix="/")
     app.register_blueprint(auth, url_prefix="/")
-
-    from .models import User
 
     # Set the view after login to be the video page
     login_manager = LoginManager()

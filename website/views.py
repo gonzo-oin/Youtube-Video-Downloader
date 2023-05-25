@@ -1,7 +1,5 @@
 from flask import Blueprint, redirect, render_template, request, flash, send_file, url_for, session
 from flask_login import login_required, current_user
-from .models import Video
-from . import db
 
 from pytube import YouTube, Playlist, Stream
 from youtubesearchpython import VideosSearch, PlaylistsSearch
@@ -23,74 +21,102 @@ def home():
     session.clear()
     return redirect(url_for("views.video"))
 
-@views.route("/video", methods=["GET", "POST"])
-def video():
-    # Check if post request
-    if request.method == "GET":
-        url = request.headers.get("url")
-        #url = request.form.get("url")
-        #date = request.form.get("date")
-        
-        session.clear()
+from flask import Blueprint, request, jsonify
+from pytube import YouTube
 
-        # Try converting a url to a downloadable video
+views = Blueprint("views", __name__)
+
+@views.route("/video", methods=["GET"])
+def video():
+    # Check if GET request
+    if request.method == "GET":
+        # Extract the url from the request
+        url = "https://www.youtube.com/watch?v=G97lx7orMN8" #request.args.get("url")
+
+        # Check if the URL is valid
+        if url is None:
+            return jsonify({"error": "URL is not provided"}), 400
+
+        # Try converting a url to a YouTube video object
         try:
             yt = YouTube(url)
         except Exception:
-            if "playlist?" in url:
-                flash("Playlists can only be converted on the playlist page.", category="error")
-            else:
-                flash("Video URL is not valid.", category="error")
-            return render_template("video.html", user=current_user)
-        
-        # Assign the file type and donwloads path
-        file_type = "mp4" # if request.form["convert"] == "mp4" else "mp3"
-        downloads_path = os.path.join(os.getcwd(), "temp")
+            return jsonify({"error": "Video URL is not valid"}), 400
 
+        # Get the highest resolution stream
         videobis = yt.streams.get_highest_resolution()
-        return redirect(videobis.url)
-# Try downloading the converted video
-        try:
-            video = download_video(yt, file_type, downloads_path, True)
-        except Exception:
-            flash("Video could not be downloaded.", category="error")
-            return render_template("video.html", user=current_user)
 
-        file_path = os.path.join(downloads_path, video.default_filename)
-
-        # Convert to mp3
-        try:
-            if file_type == "mp3":
-                file_path_mp3 = file_path.replace("mp4", "mp3")
-                if os.path.exists(file_path_mp3):
-                    os.remove(file_path_mp3)
-                
-                file_path = convert_to_mp3_with_metadata(file_path)
-        except Exception:
-            flash("Video could not be converted to an MP3 format successfully. File cannot be found or already exists.", category="error")
-            return render_template("video.html", user=current_user)
-
-        # Update file metadata
-        update_metadata(file_path, yt.title, yt.author)
-
-        # Save conversion to user history
-        #save_history(url, date, video.title, "video", file_type)
-        
-        # Try sending the file to the browser to be downloaded
-        try:
-            downloaded_file = send_file(path_or_file=file_path, as_attachment=True)
-            rmtree(downloads_path)
-            return downloaded_file
-        except Exception:
-           flash("Video converted successfully, but the file couldn't be sent to the browser! Saved to temporary folder.", category="warning")
-           print(f"File stored at: {file_path}")
-
-    # Clear playlist url session data and try to retrieve video url session data
-    session["playlist_url"] = ""
-    try: url = session["video_url"]
-    except Exception: url = ""
-
-    return render_template("video.html", user=current_user, url=url)
+        # Return the video URL as JSON
+        return jsonify({"video_url": videobis.url})
+#
+# @views.route("/video", methods=["GET", "POST"])
+# def video():
+#     # Check if post request
+#     if request.method == "GET":
+#         url = request.headers.get("url")
+#         #url = request.form.get("url")
+#         #date = request.form.get("date")
+#
+#         session.clear()
+#
+#         # Try converting a url to a downloadable video
+#         try:
+#             yt = YouTube(url)
+#         except Exception:
+#             if "playlist?" in url:
+#                 flash("Playlists can only be converted on the playlist page.", category="error")
+#             else:
+#                 flash("Video URL is not valid.", category="error")
+#             return render_template("video.html", user=current_user)
+#
+#         # Assign the file type and donwloads path
+#         file_type = "mp4" # if request.form["convert"] == "mp4" else "mp3"
+#         downloads_path = os.path.join(os.getcwd(), "temp")
+#
+#         videobis = yt.streams.get_highest_resolution()
+#         return redirect(videobis.url)
+# # Try downloading the converted video
+#         try:
+#             video = download_video(yt, file_type, downloads_path, True)
+#         except Exception:
+#             flash("Video could not be downloaded.", category="error")
+#             return render_template("video.html", user=current_user)
+#
+#         file_path = os.path.join(downloads_path, video.default_filename)
+#
+#         # Convert to mp3
+#         try:
+#             if file_type == "mp3":
+#                 file_path_mp3 = file_path.replace("mp4", "mp3")
+#                 if os.path.exists(file_path_mp3):
+#                     os.remove(file_path_mp3)
+#
+#                 file_path = convert_to_mp3_with_metadata(file_path)
+#         except Exception:
+#             flash("Video could not be converted to an MP3 format successfully. File cannot be found or already exists.", category="error")
+#             return render_template("video.html", user=current_user)
+#
+#         # Update file metadata
+#         update_metadata(file_path, yt.title, yt.author)
+#
+#         # Save conversion to user history
+#         #save_history(url, date, video.title, "video", file_type)
+#
+#         # Try sending the file to the browser to be downloaded
+#         try:
+#             downloaded_file = send_file(path_or_file=file_path, as_attachment=True)
+#             rmtree(downloads_path)
+#             return downloaded_file
+#         except Exception:
+#            flash("Video converted successfully, but the file couldn't be sent to the browser! Saved to temporary folder.", category="warning")
+#            print(f"File stored at: {file_path}")
+#
+#     # Clear playlist url session data and try to retrieve video url session data
+#     session["playlist_url"] = ""
+#     try: url = session["video_url"]
+#     except Exception: url = ""
+#
+#     return render_template("video.html", user=current_user, url=url)
 
 @views.route("/playlist", methods=["GET", "POST"])
 def playlist():
@@ -107,10 +133,10 @@ def playlist():
         except Exception:
             flash("Playlist URL is not valid.", category="error")
             return render_template("playlist.html", user=current_user)
-        
+
         # Assign the file type
         file_type = "mp4" if request.form["convert"] == "mp4" else "mp3"
-        
+
         # Try downloading all the files in the playlist
         downloads_path = os.path.join(os.getcwd(), "temp")
         playlist_path = os.path.join(downloads_path, playlist.title)
@@ -126,7 +152,7 @@ def playlist():
                     file_path_mp3 = file_path.replace("mp4", "mp3")
                     if os.path.exists(file_path_mp3):
                         os.remove(file_path_mp3)
-                    
+
                     file_path = convert_to_mp3_with_metadata(file_path)
 
                 # Update file metadata
@@ -138,10 +164,10 @@ def playlist():
             # Set playlist length. If there is only one video, default to one
             try: playlist_len = playlist.length
             except Exception: playlist_len = 1
-            
+
             # Debug the video download progress
             debug_video_progress(yt, video, file_type, f"({index + 1} of {playlist_len}): ")
-        
+
         # Save conversion to user history
         save_history(playlist_url, date, playlist.title, "playlist", file_type)
 
@@ -154,7 +180,7 @@ def playlist():
         except Exception:
             flash("Playlist converted successfully, but the zipped folder couldn't be sent to the browser! Saved to temporary folder.", category="warning")
             print(f"Folder stored at: {downloads_path}")
-    
+
     # Clear video url session data and try to retrieve playlist url session data
     session["video_url"] = ""
     try: url = session["playlist_url"]
@@ -181,7 +207,7 @@ def history():
         else: # If the button pressed was a convert button
             redirect_page = convert_video_redirect("convert")
             return redirect(url_for(redirect_page))
-    
+
     # Clear the session data
     session.clear()
     return render_template("history.html", user=current_user)
@@ -199,7 +225,7 @@ def search():
                 results = VideosSearch(title, limit=10).result()["result"]
             elif request.form["search"] == "playlist":
                 results = PlaylistsSearch(title, limit=10).result()["result"]
-            
+
             return render_template("search.html", user=current_user, results=results, title=title)
         else: # If the button pressed was a convert button
             redirect_page = convert_video_redirect("search")
@@ -249,7 +275,7 @@ def zip_folder(name: str, path: str) -> tuple[str, BytesIO]:
         for root, dirs, files in os.walk(path):
             for file in files:
                 zipf.write(os.path.join(root, file))
-            
+
     memory_file.seek(0)
     return zip_file_name, memory_file
 
