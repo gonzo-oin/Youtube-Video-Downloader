@@ -5,3 +5,6 @@ Convert a YouTube video or playlist to an MP3/MP4. **Try it out on the [website]
 
 
 git push git.heroku.com refs/heads/master --tags --verbose
+
+
+pip install -U -r requirements.txt

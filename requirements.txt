@@ -7,7 +7,7 @@ Jinja2==3.1.2
 moviepy==1.0.3
 mutagen==1.46.0
 pytube==15.0.0
--e git+https://github.com/garywu007/pytube.git#egg=pytube
+-e git+https://github.com/yogeshgirmal/pytube.git#egg=pytube
 #-e git+https://github.com/kinshuk-h/pytube@2a26b5af05af370b5c34adc5e31f6f5dee78afa8#egg=pytube
 SQLAlchemy==2.0.13
 Werkzeug==2.3.4
