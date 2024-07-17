@@ -3,10 +3,13 @@ from flask_login import login_required, current_user
 from .models import Video
 from . import db
 
-from pytube import YouTube, Playlist, Stream
+# from pytube import YouTube, Playlist, Stream
 from youtubesearchpython import VideosSearch, PlaylistsSearch
 from moviepy.editor import AudioFileClip
 import mutagen
+
+from pytubefix import YouTube, Stream
+from pytubefix.cli import on_progress
 
 from io import BytesIO
 from shutil import rmtree
@@ -91,123 +94,6 @@ def video():
     except Exception: url = ""
 
     return render_template("video.html", user=current_user, url=url)
-
-@views.route("/playlist", methods=["GET", "POST"])
-def playlist():
-    # Check if post request
-    if request.method == "POST":
-        playlist_url = request.form.get("url")
-        date = request.form.get("date")
-
-        session.clear()
-
-        # Try converting a url into a playlist data object
-        try:
-            playlist = Playlist(playlist_url)
-        except Exception:
-            flash("Playlist URL is not valid.", category="error")
-            return render_template("playlist.html", user=current_user)
-        
-        # Assign the file type
-        file_type = "mp4" if request.form["convert"] == "mp4" else "mp3"
-        
-        # Try downloading all the files in the playlist
-        downloads_path = os.path.join(os.getcwd(), "temp")
-        playlist_path = os.path.join(downloads_path, playlist.title)
-
-        for index, url in enumerate(playlist):
-            try:
-                yt = YouTube(url)
-                video = download_video(yt, file_type, playlist_path, False)
-                file_path = os.path.join(playlist_path, video.default_filename)
-
-
-                if file_type == "mp3":
-                    file_path_mp3 = file_path.replace("mp4", "mp3")
-                    if os.path.exists(file_path_mp3):
-                        os.remove(file_path_mp3)
-                    
-                    file_path = convert_to_mp3_with_metadata(file_path)
-
-                # Update file metadata
-                update_metadata(file_path, yt.title, yt.author, playlist.title)
-            except Exception:
-                print(f"There was an error converting {yt.title}. Video may not exist!")
-                continue
-
-            # Set playlist length. If there is only one video, default to one
-            try: playlist_len = playlist.length
-            except Exception: playlist_len = 1
-            
-            # Debug the video download progress
-            debug_video_progress(yt, video, file_type, f"({index + 1} of {playlist_len}): ")
-        
-        # Save conversion to user history
-        save_history(playlist_url, date, playlist.title, "playlist", file_type)
-
-        # Try zipping the playlist folder with the downloaded videos and sending the zip file to the web browser
-        try:
-            zip_file_name, memory_file = zip_folder(playlist.title, playlist_path)
-            downloaded_file = send_file(memory_file, attachment_filename=zip_file_name, as_attachment=True)
-            rmtree(downloads_path)
-            return downloaded_file
-        except Exception:
-            flash("Playlist converted successfully, but the zipped folder couldn't be sent to the browser! Saved to temporary folder.", category="warning")
-            print(f"Folder stored at: {downloads_path}")
-    
-    # Clear video url session data and try to retrieve playlist url session data
-    session["video_url"] = ""
-    try: url = session["playlist_url"]
-    except Exception: url = ""
-
-    return render_template("playlist.html", user=current_user, url=url)
-
-@views.route("/history", methods=["GET", "POST"])
-@login_required
-def history():
-    # Check if post request
-    if request.method == "POST":
-        # If the button pressed is not a convert button; i.e. the button pressed was clear history
-        if "convert" not in request.form:
-            # Try clearing user history
-            try:
-                db.session.query(Video).delete()
-                db.session.commit()
-                flash("Cleared History", category="success")
-                return render_template("history.html", user=current_user)
-            except Exception:
-                db.session.rollback()
-                flash("Could not clear history.", category="error")
-        else: # If the button pressed was a convert button
-            redirect_page = convert_video_redirect("convert")
-            return redirect(url_for(redirect_page))
-    
-    # Clear the session data
-    session.clear()
-    return render_template("history.html", user=current_user)
-
-@views.route("/search", methods=["GET", "POST"])
-def search():
-    # Check if post request
-    if request.method == "POST":
-        # If either the search video or search playlist buttons were pressed
-        if request.form["search"] == "video" or request.form["search"] == "playlist":
-            title = request.form.get("title")
-
-            # Display top 10 search results
-            if request.form["search"] == "video":
-                results = VideosSearch(title, limit=10).result()["result"]
-            elif request.form["search"] == "playlist":
-                results = PlaylistsSearch(title, limit=10).result()["result"]
-            
-            return render_template("search.html", user=current_user, results=results, title=title)
-        else: # If the button pressed was a convert button
-            redirect_page = convert_video_redirect("search")
-            return redirect(url_for(redirect_page))
-
-    # Clear the session data
-    session.clear()
-    return render_template("search.html", user=current_user)
 
 ## Functions
 
