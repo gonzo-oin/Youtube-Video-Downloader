@@ -10,7 +10,7 @@ pytube==15.0.0
 #-e git+https://github.com/oncename/pytube.git#egg=pytube
 #-e git+https://github.com/yogeshgirmal/pytube.git#egg=pytube
 #-e git+https://github.com/kinshuk-h/pytube@2a26b5af05af370b5c34adc5e31f6f5dee78afa8#egg=pytube
--e git+https://github.com/garywu007/pytube.git@ccd6285b419ca03aeb7a566544a6c7bc97cfe4bb#egg=pytube
+-e git+https://github.com/garywu007/pytube.git@1743cc70bb85f90fbcf6ab29662ccda9d7309470#egg=pytube
 SQLAlchemy==2.0.19
 Werkzeug==2.3.6
 youtube-search-python==1.6.6
